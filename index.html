@@ -15,16 +15,26 @@
 -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <link rel="canonical" href="https://weather-pwa-sample.firebaseapp.com/final/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paris Métro 1</title>
-  <link rel="stylesheet" type="text/css" href="styles/inline.css">
+  <link rel="manifest" href="/manifest.json">
 
+  <meta name="msapplication-TileImage" content="images/icons/icon-144x144.png">
+  <meta name="msapplication-TileColor" content="#2F3BA2">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Weather PWA">
+  <link rel="apple-touch-icon" href="images/icons/icon-152x152.png">
+
+  <link rel="stylesheet" type="text/css" href="styles/inline.css">
 </head>
+
 <body>
 
   <header class="header">
@@ -60,6 +70,7 @@
     <div class="dialog">
       <div class="dialog-title">Add new timetable</div>
       <div class="dialog-body">
+        <label for="selectTimetableToAdd">Station:</label>
         <select id="selectTimetableToAdd">
           <!-- Values map to Yahoo Weather API Where On Earth Identifiers (WOEIDs).
                https://developer.yahoo.com/weather/documentation.html#req -->
@@ -71,11 +82,13 @@
           <option value="metros/1/hotel+de+ville/R">Hôtel de Ville, Direction Château de Vincennes</option>
           <option value="metros/1/chatelet/A">Châtelet, Direction La Défense</option>
           <option value="metros/1/chatelet/R">Châtelet, Direction Château de Vincennes</option>
-          <option value="metros/1/palais+royal+(musee+du+louvre)/A">Palais-Royal (Musee du Louvre), Direction La Défense</option>
-          <option value="metros/1/palais+royal+(musee+du+louvre)/R">Palais-Royal (Musee du Louvre), Direction Château de Vincennes</option>
+          <option value="metros/1/palais+royal+(musee+du+louvre)/A">Palais-Royal (Musee du Louvre), Direction La
+            Défense</option>
+          <option value="metros/1/palais+royal+(musee+du+louvre)/R">Palais-Royal (Musee du Louvre), Direction Château
+            de Vincennes</option>
           <option value="metros/1/champs+elysees+clemenceau/A">Champs-Elysees-Clemenceau, Direction La Défense</option>
-          <option value="metros/1/champs+elysees+clemenceau/R">Champs-Elysees-Clemenceau, Direction Château de Vincennes</option>
-
+          <option value="metros/1/champs+elysees+clemenceau/R">Champs-Elysees-Clemenceau, Direction Château de
+            Vincennes</option>
         </select>
       </div>
       <div class="dialog-buttons">
@@ -91,8 +104,22 @@
     </svg>
   </div>
 
-  <!-- Uncomment the line below when ready to test with fake data -->
   <script src="scripts/app.js" async></script>
 
 </body>
+
 </html>
+
+<script src="https://www.gstatic.com/firebasejs/5.8.2/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyD96ETA2cAJoTcsGRzXyLs_alzV2w8tuhk",
+    authDomain: "silent-kite-221018.firebaseapp.com",
+    databaseURL: "https://silent-kite-221018.firebaseio.com",
+    projectId: "silent-kite-221018",
+    storageBucket: "silent-kite-221018.appspot.com",
+    messagingSenderId: "930355274223"
+  };
+  firebase.initializeApp(config);
+</script>

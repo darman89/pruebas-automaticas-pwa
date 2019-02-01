@@ -39,7 +39,11 @@
             app.selectedTimetables = [];
         }
         app.getSchedule(key, label);
-        app.selectedTimetables.push({key: key, label: label});
+        app.selectedTimetables.push({
+            key: key,
+            label: label
+        });
+        app.saveSelectedStations();
         app.toggleAddDialog(false);
     });
 
@@ -88,10 +92,10 @@
         card.querySelector('.card-last-updated').textContent = data.created;
 
         var scheduleUIs = card.querySelectorAll('.schedule');
-        for(var i = 0; i<4; i++) {
+        for (var i = 0; i < 4; i++) {
             var schedule = schedules[i];
             var scheduleUI = scheduleUIs[i];
-            if(schedule && scheduleUI) {
+            if (schedule && scheduleUI) {
                 scheduleUI.querySelector('.message').textContent = schedule.message;
             }
         }
@@ -112,6 +116,25 @@
 
     app.getSchedule = function (key, label) {
         var url = 'https://api-ratp.pierre-grimaud.fr/v3/schedules/' + key;
+
+        if ('caches' in window) {
+            /*
+             * Check if the service worker has already cached this city's weather
+             * data. If the service worker has the data, then display the cached
+             * data while the app fetches the latest data.
+             */
+            caches.match(url).then(function(response) {
+              if (response) {
+                response.json().then(function updateFromCache(json) {
+                  var results = json.result;
+                  results.key = key;
+                  results.label = label;
+                  app.updateTimetableCard(results);
+                });
+              }
+            });
+          }
+      
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -142,6 +165,14 @@
         });
     };
 
+    // Save list of Stations to localStorage.
+    app.saveSelectedStations = function () {
+        var selectedTimetables = JSON.stringify(app.selectedTimetables);
+        localStorage.selectedTimetables = selectedTimetables;
+    };
+
+
+
     /*
      * Fake timetable data that is presented when the user first uses the app,
      * or when the user has not saved any stations. See startup code for more
@@ -153,8 +184,7 @@
         key: 'metros/1/bastille/A',
         label: 'Bastille, Direction La Défense',
         created: '2017-07-18T17:08:42+02:00',
-        schedules: [
-            {
+        schedules: [{
                 message: '0 mn'
             },
             {
@@ -181,7 +211,26 @@
      ************************************************************************/
 
     app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
-    app.selectedTimetables = [
-        {key: initialStationTimetable.key, label: initialStationTimetable.label}
-    ];
+        
+    app.selectedTimetables = localStorage.selectedTimetables;
+    if (app.selectedTimetables) {
+        app.selectedTimetables = JSON.parse(app.selectedTimetables);
+        app.selectedTimetables.forEach(function (city) {
+            app.getSchedule(city.key, city.label);
+        });
+    } else {
+        app.updateTimetableCard(initialStationTimetable);
+        app.selectedTimetables = [{
+            key: initialStationTimetable.key,
+            label: initialStationTimetable.label
+        }];
+        app.saveSelectedStations();
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+                 .register('./service-worker.js')
+                 .then(function() { console.log('Service Worker Registered'); });
+      }
+
 })();
