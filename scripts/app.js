@@ -11,6 +11,47 @@
         addDialog: document.querySelector('.dialog-container')
     };
 
+    if (!('indexedDB' in window)) {
+        console.log('This browser doesn\'t support IndexedDB');
+        return;
+      }
+    
+      const dbPromise = window.idb.openDb('station-store', 1, upgradeDB => {
+        upgradeDB.createObjectStore('station');
+      });
+      
+      const idbKeyval = {
+        async get(key) {
+          const db = await dbPromise;
+          return db.transaction('station').objectStore('station').get(key);
+        },
+        async set(key, val) {
+          const db = await dbPromise;
+          const tx = db.transaction('station', 'readwrite');
+          tx.objectStore('station').put(val, key);
+          return tx.complete;
+        },
+        async delete(key) {
+          const db = await dbPromise;
+          const tx = db.transaction('station', 'readwrite');
+          tx.objectStore('station').delete(key);
+          return tx.complete;
+        },
+        async clear() {
+          const db = await dbPromise;
+          const tx = db.transaction('station', 'readwrite');
+          tx.objectStore('station').clear();
+          return tx.complete;
+        },
+        async keys() {
+          const db = await dbPromise;
+          return db.transaction('station').objectStore('station').getAllKeys(key);
+        },
+      };
+
+      idbKeyval.set('metros/1/bastille/A', {label: 'world'});
+      idbKeyval.get('metros/1/bastille/A').then(val => console.log(val));
+
 
     /*****************************************************************************
      *
@@ -168,6 +209,9 @@
     // Save list of Stations to localStorage.
     app.saveSelectedStations = function () {
         var selectedTimetables = JSON.stringify(app.selectedTimetables);
+        app.selectedTimetables.forEach(function (city) {
+            idbKeyval.set(city.key, {key: city.key, label: city.label});
+        });
         localStorage.selectedTimetables = selectedTimetables;
     };
 
@@ -213,7 +257,15 @@
     app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
         
     app.selectedTimetables = localStorage.selectedTimetables;
+       
+
     if (app.selectedTimetables) {
+
+        dbPromise.then(db => {
+            return db.transaction('station')
+              .objectStore('station').getAll();
+          }).then(allObjs => app.selectedTimetables = allObjs);
+
         app.selectedTimetables = JSON.parse(app.selectedTimetables);
         app.selectedTimetables.forEach(function (city) {
             app.getSchedule(city.key, city.label);
@@ -224,6 +276,7 @@
             key: initialStationTimetable.key,
             label: initialStationTimetable.label
         }];
+        idbKeyval.set(initialStationTimetable.key, {key: initialStationTimetable.key, label: initialStationTimetable.label});
         app.saveSelectedStations();
     }
 
@@ -232,5 +285,9 @@
                  .register('./service-worker.js')
                  .then(function() { console.log('Service Worker Registered'); });
       }
+
+      
+    
+    
 
 })();
