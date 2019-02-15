@@ -1,6 +1,7 @@
 (function () {
     'use strict';
 
+    var t1, t2;
     var app = {
         isLoading: true,
         visibleCards: {},
@@ -142,6 +143,7 @@
         }
 
         if (app.isLoading) {
+
             app.spinner.setAttribute('hidden', true);
             app.container.removeAttribute('hidden');
             app.isLoading = false;
@@ -181,6 +183,8 @@
         request.onreadystatechange = function () {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
+                    t2=performance.now();
+                    window.cardLoadTime = t2 - t1;
                     var response = JSON.parse(request.response);
                     var result = {};
                     result.key = key;
@@ -195,7 +199,9 @@
             }
         };
         request.open('GET', url);
+        t1=performance.now();
         request.send();
+        
     };
 
     // Iterate all of the cards and attempt to get the latest timetable data
